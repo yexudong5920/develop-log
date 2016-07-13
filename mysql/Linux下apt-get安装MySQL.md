@@ -1,0 +1,23 @@
+# Linux下apt-get安装MySQL
+
+1. apt-get install mysql-server
+
+2. apt-get install mysql-client
+
+3. mysql -u root -p进入mysql命令行，用set password命令修改密码
+	```sql
+        SET PASSWORD FOR ‘root’@’localhost’=PASSWORD(‘localhost login password’);
+        SET PASSWORD FOR’root’@’%’=PASSWORD(‘remote login password’);
+    ```
+
+4. 大坑-mysql不能远程访问
+
+gedit /etc/mysql.my.cnf
+找到bind-address      =127.0.0.1
+修改为bind-address   =0.0.0.0
+
+	```
+		# Instead of skip-networking the default is now to listen only on
+		# localhost which is more compatible and is not less secure.
+		bind-address        = 0.0.0.0
+	```
