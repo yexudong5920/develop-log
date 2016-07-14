@@ -1,0 +1,87 @@
+# OAuth2.0理解
+
+![OAuth2.0](http://image.beekka.com/blog/2014/bg2014051201.png)
+
+接触到使用了OAuth2.0的互联网开放平台（如微信、新浪微博等）开发已经时间不短，之前一直是根据文档去拿token实现需求的功能，没有完全明白这要来来回回拿code、accessToken、refreshToken有什么意义
+
+## 应用场景
+
+理解一个设计标准，必须要明白他要解决的问题，其中耿介才能明了
+
+此处试图用一个很常见的生活场景来还原OAuth2.0要解决的问题：
+
+我有个朋友叫做“团长”，他经常叫我帮他发送体检报告、打印简历之类的事。于是就需要我登录他的163邮箱，为了让我登录邮箱，传统的方式就是，他必须把邮箱的账号和密码告诉我。
+
+这样的授权方式会面临几个比较大的问题：
+
+1. 我为了方便以后帮团长打简历，必须要保存团长的密码，这样很不安全。
+2. 团长其实是不希望我看见他跟老婆的私人邮件的，但是密码没有这样的权限控制，也没办法限制授权的有效期。
+3. 团长只有修改密码，才能收回对我的授权，而这样团长的其他助理也会全部失去授权。
+4. 一旦我在登录过程中，有人在我身后看到了我输入的密码，团长的密码就会泄露出去，团长的所有数据会全部泄露。
+
+OAuth的作用就呼之欲出了。
+
+## 名词定义
+
+对应以上的场景，我们来做出以下定义：
+
+1. 客户端，第三方程序，即上文所说的我
+2. 服务提供商，即上文中的163邮箱
+3. 用户，资源所有者，即上文中的团长
+
+## OAuth思路
+
+OAuth在"客户端"与"服务提供商"之间，设置了一个授权层（authorization layer）。"客户端"不能直接登录"服务提供商"，只能登录授权层，以此将用户与客户端区分开来。"客户端"登录授权层所用的令牌（token），与用户的密码不同。用户可以在登录的时候，指定授权层令牌的权限范围和有效期。
+
+"客户端"登录授权层以后，"服务提供商"根据令牌的权限范围和有效期，向"客户端"开放用户储存的资料。
+
+## 授权流程
+
+以常见的微信授权登录为例，描述一个相对完整的OAuth2.0授权流程
+
+### 用户访问客户端，后者将前者导向认证服务器
+
+例：
+[https://mp.weixin.com/authorize?response_type=code&client_id=CLIENT_ID&state=xyz&redirect_uri=http://www.client.com/callback](https://mp.weixin.com//authorize?response_type=code&client_id=CLIENT_ID&state=xyz&redirect_uri=http://www.client.com/callback)
+这个url中
+
+* response_type：表示授权类型，必选项，此处的值固定为"code"
+* client_id：表示客户端的ID，必选项
+* redirect_uri：表示重定向URI，可选项
+* scope：表示申请的权限范围，可选项（解决问题2）
+* state：表示客户端的当前状态，可以指定任意值，认证服务器会原封不动地返回这个值（这是一个给client开发者自投自抢的参数）
+
+### 用户选择是否给予客户端授权（选‘是’继续流程）
+
+这里用户将在授权服务器的页面上，看到请求授权的客户端是谁，请求哪些权限，而这两个关键信息，客户端是无法撒谎的
+
+### 认证服务器将用户导向客户端事先指定的"重定向URI"（redirection URI），同时附上一个授权码
+
+用户确认授权后，认证服务器将回应客户端的url，例如：
+
+[http://www.client.com/callback?code=CODE&state=xyz](http://www.client.com/callback?code=CODE&state=xyz)
+这个url中：
+
+* code：表示授权码，必选项。该码的有效期应该很短，通常设为10分钟，客户端只能使用该码一次，否则会被授权服务器拒绝。该码与客户端ID和重定向URI，是一一对应关系。
+* state：如果客户端的请求中包含这个参数，认证服务器的回应也必须一模一样包含这个参数。
+
+### 客户端收到授权码，附上早先的"重定向URI"，向认证服务器申请令牌。
+
+这一步是在客户端的后台的服务器上完成的，对用户不可见
+例：
+[http://mp.weixin.com/authorize?grant_type=authorization_code&code=CODE&redirect_uri=http://www.client.com/callback](http://mp.weixin.com/authorize?grant_type=authorization_code&code=CODE&redirect_uri=http://www.client.com/callback)
+
+* grant_type：表示使用的授权模式，必选项，此处的值固定为"authorization_code"。
+* code：表示上一步获得的授权码，必选项。
+* redirect_uri：表示重定向URI，必选项，且必须与A步骤中的该参数值保持一致。
+* client_id：表示客户端ID，必选项。
+
+认证服务器核对了授权码和重定向URI，确认无误后，向客户端发送访问令牌（access token）和更新令牌（refresh token）。
+
+## refresh_token的作用
+
+如果用户访问的时候，客户端的"访问令牌"已经过期，则需要使用"更新令牌"申请一个新的访问令牌。
+
+由于access_token作为客户端的准入令牌，可能在访问过程中被泄露，于是OAuth在设计上，access_token的有效时间通常不会太长，以微信为例，应该是2小时，所以access_token被泄露的危害被控制在一定范围内。（解决问题4）
+而refresh_token只在首次获得和请求刷新"访问令牌"时才会在网络中出现，其他时间都是保存在客户端内部，很难被泄露，所以有效时间可以相对较长，这样既保证了安全性，也避免了因为"访问令牌"失效，而需要让用户一直去点授权的麻烦。
+
