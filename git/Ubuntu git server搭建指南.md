@@ -26,6 +26,7 @@
 
 7. 将公钥复制到Ubuntu上
 	追加到/home/git/.ssh/authorized_keys文件尾部（第一次复制需要手动创建该文件）
+	github用户可将公钥添加到[github key设置页面](https://github.com/settings/keys)
 	
 8. 本地使用SSH私钥推拉远端仓库
 	运行PuTTYGen，在Conversions菜单中点击Import key，选择ssh-keygen生成的私钥文件所在位置，比如id_rsa文件
