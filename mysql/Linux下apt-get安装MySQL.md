@@ -21,3 +21,8 @@ gedit /etc/mysql.my.cnf
 		# localhost which is more compatible and is not less secure.
 		bind-address        = 0.0.0.0
 	```
+授权远程ip登录
+	```sql
+		GRANT ALL PRIVILEGES ON *.* TO 'myuser'@'%' IDENTIFIED BY 'mypassword' WITH GRANT OPTION;
+		FLUSH   PRIVILEGES;
+	```
