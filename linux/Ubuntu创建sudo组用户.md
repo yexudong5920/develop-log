@@ -22,6 +22,6 @@
 
 6. 如果以sudo用户登录后离开电脑与以root身份登录的危害不同
 
-7. 以root身份运行的网络应用如果被破解入侵并植入脚本，将难以挽回的损失（血的教训！）
+7. 以root身份运行的网络应用如果被破解入侵并植入脚本，将造成难以挽回的损失（血的教训！）
 
 [参考资料:Ubuntu help](https://help.ubuntu.com/community/RootSudo)
