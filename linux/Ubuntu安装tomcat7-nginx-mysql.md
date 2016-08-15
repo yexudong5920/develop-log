@@ -17,5 +17,13 @@ CATALINA_BASE /var/lib/tomcat7
 nginx所有配置在目录：/etc/nginx/
 日志文件目录：/var/log/nginx/
 
+* 修改nginx最大body大小解决413 Request Entity Too Large错误
+
+	nginx.cnf中http{}节点中增加配置
+
+	```
+		client_max_body_size 2m;
+	```
+
 
 
