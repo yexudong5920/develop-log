@@ -89,9 +89,13 @@ angularjs中的$http服务可全局指定ajax请求的是否发送credentials(an
 	  $httpProvider.defaults.withCredentials = true;
 	}])
 ```
+---
 
-参考资料
+## reference
 [浏览器同源政策及其规避方法-阮一峰网络日志](http://www.ruanyifeng.com/blog/2016/04/same-origin-policy.html)
+
 [跨域资源共享 CORS 详解-阮一峰网络日志](http://www.ruanyifeng.com/blog/2016/04/cors.html)
+
 [W3C Recomendation](https://www.w3.org/TR/cors/)
+
 [nginx](http://nginx.org/en/docs/http/ngx_http_headers_module.html)
