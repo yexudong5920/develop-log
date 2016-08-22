@@ -34,3 +34,55 @@
     详见[stackoverflow](http://stackoverflow.com/questions/16569841/reloading-the-page-gives-wrong-get-request-with-angularjs-html5-mode)
     
     3.2. 此处的关键，在于将服务器上未解决的请求转移到SPA的根路径
+    
+4. mod rewrite
+
+    [mod_rewrite](http://httpd.apache.org/docs/current/mod/mod_rewrite.html)是Apache web server的一个默认模块，篡改浏览器提交的url请求，并传递内容给浏览器。
+    
+    这个过程完全发生在服务端，浏览器毫不知情。结果页面就好像是源于提交的url（实际上不是），就像给源url带了一个面具。
+    
+    然而，这个功能跟经典的重定向是不同的，重定向只是简单地指挥浏览器跳转到另一个不同的服务器地址。
+    
+    由于mod rewrite有效地伪装了网站内容是从哪里、如何服务的，所以能提高网站安全性。由于静态化了网站路径，也能够用做搜索引擎优化。
+
+5. [grunt plugin: connect-modrewrite](https://github.com/tinganho/connect-modrewrite)
+
+    参考http://stackoverflow.com/questions/24283653/angularjs-html5mode-using-grunt-connect-grunt-0-4-5
+    
+    connect-modrewrite表达式的详细规则见于[github](https://github.com/tinganho/connect-modrewrite)
+
+    在Gruntfile.js中connect中增加一个middleware:
+        
+        ```
+        livereload: {
+            options: {
+              open: true,
+              middleware: function (connect) {
+                return [
+                    // mod rewrite all request to /index.html
+                  modRewrite(['^[^\\.]*$ /index.html [L]']),
+                  connect.static('.tmp'),
+                  connect().use(
+                    '/bower_components',
+                    connect.static('./bower_components')
+                  ),
+                  connect.static(appConfig.app)
+                ];
+              }
+            }
+          }
+        ```
+
+6. nginx config
+    
+    ```
+    server {
+        server_name yoursite.com;
+        root /usr/share/html;
+        index index.html;
+    
+        location / {
+        try_files $uri $uri/ /index.html;
+        }
+    }
+    ```
