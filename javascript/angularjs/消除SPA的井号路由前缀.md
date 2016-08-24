@@ -1,4 +1,4 @@
-# 消除单页面应用（SPA）路由上的#前缀
+# 消除基于angularjs构建的单页面应用（SPA）路由上的#前缀
 
 1. $locationProvider.html5mode(true)
     
